@@ -41,9 +41,9 @@ app.get('/api/track/:waybillNo', async (req, res) => {
 });
 
 // กำหนด Port จาก Environment Variable ของ Render (ถ้าไม่มีจะใช้ 3000)
-const PORT = process.env.PORT || 3000;
+// เปลี่ยนบรรทัดนี้ใน server.js
+const PORT = process.env.PORT || 10000;
 
-// ให้ Express ฟัง Port แบบ Default โดยไม่ระบุ IP Specific
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
