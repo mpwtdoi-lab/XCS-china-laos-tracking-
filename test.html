@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ລະບົບຕິດຕາມພັດສະດຸ ຈີນ - ລາວ</title>
+    <!-- นำเข้าฟอนต์ภาษาลาว Phetsarath OT เพื่อความสวยงาม -->
+    <link href="https://fonts.googleapis.com/css2?family=Phetsarath:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Phetsarath', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f6f9; 
+            margin: 0; 
+            padding: 40px 20px; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+        h1 { text-align: center; color: #1a56db; margin-bottom: 8px; font-size: 26px; }
+        p.subtitle { text-align: center; color: #6b7280; margin-top: 0; margin-bottom: 24px; font-size: 15px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { 
+            flex: 1; 
+            padding: 12px 16px; 
+            border: 1px solid #d1d5db; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            outline: none; 
+            font-family: inherit;
+        }
+        input:focus { border-color: #1a56db; }
+        button { 
+            padding: 12px 24px; 
+            background-color: #0056b3; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-family: inherit;
+        }
+        button:hover { background-color: #004085; }
+        .result-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-top: 20px; }
+        .timeline { list-style: none; padding: 0; position: relative; margin-top: 20px; }
+        .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #e5e7eb; }
+        .timeline-item { position: relative; padding-left: 45px; margin-bottom: 24px; }
+        .timeline-icon { position: absolute; left: 7px; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: #1a56db; border: 3px solid white; }
+        .timeline-date { font-size: 13px; color: #6b7280; font-weight: 500; }
+        .timeline-type { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 6px; }
+        .timeline-desc { font-size: 15px; color: #1f2937; font-weight: 500; margin-top: 6px; line-height: 1.4; }
+        .error { color: #dc2626; text-align: center; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ຕິດຕາມພັດສະດຸ ຈີນ - ລາວ</h1>
+    <p class="subtitle">ກວດກາສະຖານະເຄື່ອງຂອງທ່າມໄດ້ງ່າຍໆ ຢູ່ທີ່ນີ້</p>
+    
+    <div class="search-box">
+        <input type="text" id="waybillInput" placeholder="ກະລຸນາປ້ອນເລກຕິດຕາມພັດສະດຸ..." value="79120409198046">
+        <button onclick="trackPackage()">🔍 ຄົ້ນຫາ</button>
+    </div>
+
+    <div id="resultContainer"></div>
+</div>
+
+<script>
+async function trackPackage() {
+    const waybillNo = document.getElementById('waybillInput').value.trim();
+    const resultDiv = document.getElementById('resultContainer');
+
+    if (!waybillNo) {
+        alert('ກະລຸນາປ້ອນເລກຕິດຕາມພັດສະດຸ');
+        return;
+    }
+
+    resultDiv.innerHTML = '<p style="text-align:center;">ກຳລັງໂຫຼດຂໍ້ມູນ...</p>';
+
+    try {
+        const response = await fetch(`/api/track/${waybillNo}`);
+        const result = await response.json();
+
+        if (!result.success) {
+            resultDiv.innerHTML = `<div class="result-card error">❌ ${result.message}</div>`;
+            return;
+        }
+
+        const chinaData = result.data;
+        const resObj = chinaData.res || chinaData;
+        const logs = resObj.status_list || [];
+
+        let html = `<div class="result-card">
+            <h3 style="margin-top:0;">ເລກພັດສະດຸ: ${waybillNo}</h3>`;
+
+        if (logs.length > 0) {
+            html += `<ul class="timeline">`;
+            logs.forEach(item => {
+                const time = item.time || '-';
+                const typeShow = item.type_show ? `<span class="timeline-type">${item.type_show}</span>` : '';
+                
+                // ดึงรายละเอียด และเปลี่ยนคำว่า 海林 เป็น XCS
+                let desc = item.desc || '-';
+                desc = desc.replace(/海林/g, 'XCS');
+
+                html += `
+                    <li class="timeline-item">
+                        <div class="timeline-icon"></div>
+                        <div class="timeline-date">${time} ${typeShow}</div>
+                        <div class="timeline-desc">${desc}</div>
+                    </li>
+                `;
+            });
+            html += `</ul>`;
+        } else {
+            html += `<p style="text-align:center; color:#6b7280;">ບໍ່ພົບຂໍ້ມູນສະຖານະພັດສະດຸ</p>`;
+        }
+
+        html += `</div>`;
+        resultDiv.innerHTML = html;
+
+    } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = `<div class="result-card error">❌ ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ກັບ Express Server</div>`;
+    }
+}
+</script>
+
+</body>
+</html>
