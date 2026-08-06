@@ -8,34 +8,29 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ให้บริการ Static Files จากโฟลเดอร์ปัจจุบัน
-app.use(express.static(__dirname));
-
-// หน้าแรก ให้ส่ง test.html
+// เสิร์ฟหน้าเว็บ test.html
 app.get('/', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'test.html'));
+    res.sendFile(path.join(__dirname, 'test.html'));
 });
 
-// API Proxy ดึงข้อมูลพัสดุ
+// API Proxy ดึงข้อมูล
 app.get('/api/track/:waybillNo', async (req, res) => {
-    const { waybillNo } = req.params;
     try {
+        const { waybillNo } = req.params;
         const response = await axios.get(`https://www.hl-express.cn/api/track/${waybillNo}`, {
-            timeout: 8000,
+            timeout: 10000,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                'User-Agent': 'Mozilla/5.0'
             }
         });
         res.json(response.data);
     } catch (error) {
-        console.error('API Fetch Error:', error.message);
-        res.status(500).json({ success: false, message: 'ไม่สามารถดึงข้อมูลจากระบบจีนได้' });
+        console.error('Error fetching data:', error.message);
+        res.status(500).json({ error: 'Failed to fetch data' });
     }
 });
 
-// ให้ Render เป็นคนกำหนด Port เอง
-const PORT = process.env.PORT || 3000;
-
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
