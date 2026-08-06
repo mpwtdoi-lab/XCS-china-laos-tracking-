@@ -5,48 +5,37 @@ const path = require('path');
 
 const app = express();
 
-// อนุญาตให้ยิง Cross-Origin ได้
 app.use(cors());
 app.use(express.json());
 
-// 1. ให้บริการหน้าเว็บหลัก (test.html)
+// ให้บริการ Static Files จากโฟลเดอร์ปัจจุบัน
+app.use(express.static(__dirname));
+
+// หน้าแรก ให้ส่ง test.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'test.html'), (err) => {
-        if (err) {
-            console.error('ไม่พบไฟล์ test.html:', err);
-            res.status(500).send('Error: test.html not found on server');
-        }
-    });
+    res.sendFile(path.resolve(__dirname, 'test.html'));
 });
 
-// 2. API Proxy ดึงข้อมูลพัสดุจากจีน (ป้องกันเว็บพังและติด CORS)
+// API Proxy ดึงข้อมูลพัสดุ
 app.get('/api/track/:waybillNo', async (req, res) => {
     const { waybillNo } = req.params;
-    
     try {
-        // ดึงข้อมูลจาก API จีน
         const response = await axios.get(`https://www.hl-express.cn/api/track/${waybillNo}`, {
-            timeout: 10000, // ตั้งเวลาหมดอายุ 10 วินาที
+            timeout: 8000,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
             }
         });
-        
         res.json(response.data);
     } catch (error) {
-        console.error('API Error:', error.message);
-        // หากส่งผ่าน API ไม่ได้ จะส่ง Error กลับไปให้ Frontend จัดการโดยไม่ทำให้ Server Crash
-        res.status(502).json({ 
-            success: false, 
-            message: 'ບໍ່ສາມາດເຊື່ອມຕໍ່ລະບົບຈີນໄດ້ (ไม่สามารถเชื่อมต่อระบบจีนได้)',
-            error: error.message 
-        });
+        console.error('API Fetch Error:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถดึงข้อมูลจากระบบจีนได้' });
     }
 });
 
-// 3. กำหนด Port ให้ Render ดึงไปใช้โดยอัตโนมัติ
+// ให้ Render เป็นคนกำหนด Port เอง
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(` Server ready on port ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
