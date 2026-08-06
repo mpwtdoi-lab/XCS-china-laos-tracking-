@@ -6,43 +6,44 @@ const fs = require('fs');
 
 const app = express();
 
+// เปิดใช้งาน CORS และ JSON Parser
 app.use(cors());
 app.use(express.json());
 
-// เสิร์ฟ static files ทุกตัวในโฟลเดอร์
+// เสิร์ฟ static files ทั้งหมดในโฟลเดอร์หลัก
 app.use(express.static(__dirname));
 
-// หน้าแรก Check ว่ามี test.html ไหม ป้องกัน Crash
+// หน้าแรก (/) : ตรวจสอบว่ามีไฟล์ test.html ไหม ป้องกัน Server ตก
 app.get('/', (req, res) => {
     const filePath = path.join(__dirname, 'test.html');
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
-        res.send('Server is running! (test.html not found in root)');
+        res.send('Server is running successfully! (test.html is missing)');
     }
 });
 
-// API Proxy
+// API Proxy สำหรับดึงข้อมูลการติดตามพัสดุ
 app.get('/api/track/:waybillNo', async (req, res) => {
     try {
         const { waybillNo } = req.params;
         const response = await axios.get(`https://www.hl-express.cn/api/track/${waybillNo}`, {
             timeout: 10000,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
         });
         res.json(response.data);
     } catch (error) {
-        console.error('API Error:', error.message);
-        res.status(500).json({ error: 'Failed to fetch tracking data' });
+        console.error('API Fetch Error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch tracking data from external API' });
     }
 });
 
-// กำหนด Port และ Bind กับ 0.0.0.0 อย่างถูกต้องสำหรับ Render
-const PORT = process.env.PORT || 10000;
-const HOST = '0.0.0.0';
+// กำหนด Port จาก Environment Variable ของ Render (ถ้าไม่มีจะใช้ 3000)
+const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, HOST, () => {
-    console.log(`Server is running on http://${HOST}:${PORT}`);
+// ให้ Express ฟัง Port แบบ Default โดยไม่ระบุ IP Specific
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
