@@ -68,6 +68,9 @@ app.get('/api/track/:waybillNo', async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-    console.log('🚀 Server พร้อมทำงานที่ http://localhost:3000');
+// ✅ ของใหม่ ( รองรับทั้ง Render และ Localhost )
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server พร้อมทำงานที่ port ${PORT}`);
 });
