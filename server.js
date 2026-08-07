@@ -6,14 +6,22 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// 1. ปรับแต่ง CORS ให้รองรับทุก Origin และ Browser
+// ป้องกัน Process ดับเมื่อเจอ Uncaught Exception
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// ตั้งค่า CORS ให้รองรับทุกเบราว์เซอร์
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
-// 2. เสริม Security Headers เพื่อป้องกัน Safari / Mobile Browser บล็อก Request
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -28,8 +36,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(__dirname));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// หน้าแรก ส่งไฟล์ test.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test.html'), (err) => {
+        if (err) res.status(200).send('<h1>XCS Tracking API Online</h1>');
+    });
+});
 
 // API Endpoint สำหรับดึงข้อมูลพัสดุ
 app.get('/api/track/:waybillNo', async (req, res) => {
@@ -87,13 +102,6 @@ app.get('/api/track/:waybillNo', async (req, res) => {
 
 // Health check
 app.get('/health', (req, res) => res.status(200).send('OK'));
-
-// Web Page
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'test.html'), (err) => {
-        if (err) res.status(200).send('<h1>XCS Tracking API Online</h1>');
-    });
-});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
