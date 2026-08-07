@@ -1,25 +1,34 @@
 const express = require('express');
 const axios = require('axios');
-const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Render จะกำหนด PORT มาให้ทาง environment variable
+const PORT = process.env.PORT || 10000;
 
-// เปิดใช้งาน CORS ให้ทุกเบราว์เซอร์เข้าถึงได้
-app.use(cors());
+// จัดการ CORS ด้วย Native Header (ไม่ต้องใช้ package cors)
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// เสิร์ฟไฟล์Static หน้าเว็บ
+// Serve static files
 app.use(express.static(__dirname));
 
-// หน้าแรก ให้แสดงไฟล์ test.html
+// หน้าแรก ส่ง test.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'test.html'));
 });
 
-// API สำหรับดึงสถานะพัสดุ
+// API ค้นหาพัสดุ
 app.get('/api/track/:waybillNo', async (req, res) => {
     const { waybillNo } = req.params;
 
@@ -57,9 +66,9 @@ app.get('/api/track/:waybillNo', async (req, res) => {
     }
 });
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
 });
