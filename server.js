@@ -1,12 +1,22 @@
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
-// Render จะกำหนด PORT มาให้ทาง environment variable
+// Render จะส่งค่า PORT มาให้เสมอ
 const PORT = process.env.PORT || 10000;
 
-// จัดการ CORS ด้วย Native Header (ไม่ต้องใช้ package cors)
+// ดักจับ Error ระดับ Global ไม่ให้ Process ดับเด็ดขาด
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection:', reason);
+});
+
+// ตั้งค่า CORS Header
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -23,9 +33,25 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use(express.static(__dirname));
 
-// หน้าแรก ส่ง test.html
+// Request Logger (ดูใน Render Log ได้เวลาคนเข้าเว็บ)
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
+// หน้าแรก
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'test.html'));
+    const htmlPath = path.join(__dirname, 'test.html');
+    if (fs.existsSync(htmlPath)) {
+        res.sendFile(htmlPath);
+    } else {
+        res.status(200).send(`
+            <div style="text-align:center; padding:50px; font-family:sans-serif;">
+                <h1 style="color:#0d6efd;">XCS Tracking API Online</h1>
+                <p>ระบบพร้อมใช้งาน (ไม่พบไฟล์ test.html ใน Root Directory)</p>
+            </div>
+        `);
+    }
 });
 
 // API ค้นหาพัสดุ
@@ -69,6 +95,7 @@ app.get('/api/track/:waybillNo', async (req, res) => {
 // Health check
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
+// **จุดสำคัญที่สุด**: ต้องใส่ '0.0.0.0' เพื่อเปิดรับ Network ภายนอกบน Render
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server listening on 0.0.0.0:${PORT}`);
 });
