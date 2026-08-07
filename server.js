@@ -4,18 +4,17 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-// ใช้ process.env.PORT หรือ fallback ไปที่ 8080 เพื่อหลีกเลี่ยงปัญหา Network Block
 const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ให้บริการไฟล์ Static
+// Serve static files
 app.use(express.static(path.join(__dirname)));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API Endpoint สำหรับค้นหาพัสดุ
+// API Endpoint สำหรับดึงข้อมูลพัสดุ
 app.get('/api/track/:waybillNo', async (req, res) => {
     const { waybillNo } = req.params;
 
@@ -31,7 +30,6 @@ app.get('/api/track/:waybillNo', async (req, res) => {
     try {
         const targetUrl = 'https://0x26.cn/index.php/OpenApi/Order/getOrderStatus';
         
-        // ใช้ URLSearchParams ในตัวของ Node.js (ไม่ต้องลง package เสริม)
         const formData = new URLSearchParams();
         formData.append('v', '3.1');
         formData.append('auth', 'b39aba698b7d588f8237fec222d959fb');
@@ -54,6 +52,10 @@ app.get('/api/track/:waybillNo', async (req, res) => {
             }
         });
 
+        // แสดง Log ข้อมูลดิบใน Render Logs เพื่อการตรวจสอบ
+        console.log("=== API RESPONSE RAW ===");
+        console.log(JSON.stringify(response.data));
+
         return res.json({
             success: true,
             waybillNo: waybillNo,
@@ -70,10 +72,10 @@ app.get('/api/track/:waybillNo', async (req, res) => {
     }
 });
 
-// Health check endpoint สำหรับ Render
+// Health check
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
-// หน้าเว็บหลัก
+// Web Page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'test.html'), (err) => {
         if (err) res.status(200).send('<h1>XCS Tracking API Online</h1>');
