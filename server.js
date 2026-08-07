@@ -1,26 +1,26 @@
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
-// Render จะส่งค่า PORT มาให้เสมอ
+
+// Render จะส่งพอร์ตมาทาง process.env.PORT
 const PORT = process.env.PORT || 10000;
 
-// ดักจับ Error ระดับ Global ไม่ให้ Process ดับเด็ดขาด
+// ป้องกัน App ล่มจาก Error ที่คาดไม่ถึง
 process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
+    console.error('Uncaught Exception:', err.message);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
     console.error('Unhandled Rejection:', reason);
 });
 
-// ตั้งค่า CORS Header
+// Cross-Origin Headers
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
     }
@@ -30,31 +30,19 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
+// Serve Static Files
 app.use(express.static(__dirname));
 
-// Request Logger (ดูใน Render Log ได้เวลาคนเข้าเว็บ)
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    next();
-});
-
-// หน้าแรก
+// Route หน้าแรก
 app.get('/', (req, res) => {
-    const htmlPath = path.join(__dirname, 'test.html');
-    if (fs.existsSync(htmlPath)) {
-        res.sendFile(htmlPath);
-    } else {
-        res.status(200).send(`
-            <div style="text-align:center; padding:50px; font-family:sans-serif;">
-                <h1 style="color:#0d6efd;">XCS Tracking API Online</h1>
-                <p>ระบบพร้อมใช้งาน (ไม่พบไฟล์ test.html ใน Root Directory)</p>
-            </div>
-        `);
-    }
+    res.sendFile(path.join(__dirname, 'test.html'), (err) => {
+        if (err) {
+            res.status(200).send('<h1 style="text-align:center;margin-top:50px;">XCS Tracking API is Working!</h1>');
+        }
+    });
 });
 
-// API ค้นหาพัสดุ
+// API Endpoint
 app.get('/api/track/:waybillNo', async (req, res) => {
     const { waybillNo } = req.params;
 
@@ -87,15 +75,11 @@ app.get('/api/track/:waybillNo', async (req, res) => {
         return res.json({ success: true, waybillNo, data: response.data });
 
     } catch (error) {
-        console.error("API Error:", error.message);
         return res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Health check
-app.get('/health', (req, res) => res.status(200).send('OK'));
-
-// **จุดสำคัญที่สุด**: ต้องใส่ '0.0.0.0' เพื่อเปิดรับ Network ภายนอกบน Render
+// รันแบบ Bind ทุก Network Interface (0.0.0.0)
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server listening on 0.0.0.0:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
