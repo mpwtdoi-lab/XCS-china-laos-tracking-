@@ -2,7 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const path = require('path');
-const qs = require('qs'); // ใช้จัดการ Form Data (URL encoded)
+const qs = require('qs');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// API Endpoint สำหรับดึงข้อมูลสถานะพัสดุ
 app.get('/api/track/:waybillNo', async (req, res) => {
     const { waybillNo } = req.params;
 
@@ -27,14 +28,15 @@ app.get('/api/track/:waybillNo', async (req, res) => {
     console.log(`[${new Date().toISOString()}] Fetching tracking for: ${waybillNo}`);
 
     try {
-        // 1. Query String Parameters
         const targetUrl = 'https://0x26.cn/index.php/OpenApi/Order/getOrderStatus';
+        
+        // 1. Query Parameters
         const queryParams = {
             logid: '001786100803036',
             app_info: JSON.stringify({ from: 'h5', os_type: 'other' })
         };
 
-        // 2. Form Data Body (แปลงข้อมูลเป็น Form-urlencoded ตามภาพ Payload)
+        // 2. Form Data Body ตาม Payload จริง
         const formData = qs.stringify({
             v: '3.1',
             auth: 'b39aba698b7d588f8237fec222d959fb',
@@ -43,7 +45,7 @@ app.get('/api/track/:waybillNo', async (req, res) => {
             log_types: 'tt_depart,tt_arrive,depart,arrive,deliver,sign,custom,receipt,create_reservation,reservation_accept,reservation_cancel_accept,reservation_to_order,reservation_merge_order,trans_order,order_taking_dispatch,reserved_dispatch,shuttle_load,b_shuttle_accept,delivery_load,back,cancel_back,tr_pda_scan_load,tr_pda_scan_unload,tr_unload,tr_load,online_trans_reject,online_trans_accept,online_trans_cancel_accept,trans_arrival,tr_reload,tt_create_auto_delivery'
         });
 
-        // 3. ยิง Request แบบ POST
+        // 3. ยิง Request ไปยัง Server ต้นทาง
         const response = await axios.post(targetUrl, formData, {
             params: queryParams,
             timeout: 15000,
@@ -64,10 +66,9 @@ app.get('/api/track/:waybillNo', async (req, res) => {
 
     } catch (error) {
         console.error(`[API Fetch Error]: ${error.message}`);
-        
         return res.status(500).json({
             success: false,
-            message: 'เกิดข้อผิดพลาดในการดึงข้อมูลจากระบบต้นทาง',
+            message: 'เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบต้นทาง',
             error: error.message
         });
     }
