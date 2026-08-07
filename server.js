@@ -14,16 +14,15 @@ if (!AUTH_TOKEN) {
   console.warn('⚠️  WARNING: ยังไม่ได้ตั้งค่า XCS_AUTH_TOKEN ใน Environment Variables — API tracking จะไม่ทำงาน');
 }
 
-// ป้องกัน App ล่มจาก Error ที่คาดไม่ถึง แต่ยัง log แล้ว restart process
-// (Render จะรัน service ขึ้นมาใหม่ให้อัตโนมัติเมื่อ process exit)
+// ป้องกัน App ล่มจาก Error ที่คาดไม่ถึง
+// (แค่ log ไว้ ไม่สั่งปิด process เพราะจะทำให้ server restart วนไปเรื่อยๆ
+//  ทุกครั้งที่เจอ error เล็กๆ น้อยๆ จาก request หนึ่งครั้ง)
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err.message, err.stack);
-  process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
-  process.exit(1);
 });
 
 // Cross-Origin Headers
@@ -96,6 +95,7 @@ app.get('/api/track/:waybillNo', async (req, res) => {
 
     return res.json({ success: true, waybillNo, data: response.data });
   } catch (error) {
+    console.error('Track API error:', error.message);
     if (error.code === 'ECONNABORTED') {
       return res.status(504).json({ success: false, message: 'เชื่อมต่อ API ต้นทางหมดเวลา (timeout)' });
     }
