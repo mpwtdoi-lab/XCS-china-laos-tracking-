@@ -6,7 +6,24 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-app.use(cors());
+// 1. ปรับแต่ง CORS ให้รองรับทุก Origin และ Browser
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+
+// 2. เสริม Security Headers เพื่อป้องกัน Safari / Mobile Browser บล็อก Request
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -51,10 +68,6 @@ app.get('/api/track/:waybillNo', async (req, res) => {
                 'Origin': 'https://0x26.cn'
             }
         });
-
-        // แสดง Log ข้อมูลดิบใน Render Logs เพื่อการตรวจสอบ
-        console.log("=== API RESPONSE RAW ===");
-        console.log(JSON.stringify(response.data));
 
         return res.json({
             success: true,
