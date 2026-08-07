@@ -1,144 +1,3 @@
-<!DOCTYPE html>
-<html lang="lo">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ຕິດຕາມພັດສະດຸ จีน - ลาว</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Noto Sans Lao', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            background-color: #f4f6f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 550px;
-            padding: 30px;
-        }
-        .title {
-            color: #0d6efd;
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-        .subtitle {
-            color: #6c757d;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 24px;
-        }
-        .search-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .search-input:focus {
-            border-color: #0d6efd;
-        }
-        .search-btn {
-            background-color: #0d6efd;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 0 24px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .search-btn:hover {
-            background-color: #0b5ed7;
-        }
-        .result-box {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 16px;
-            display: none;
-        }
-        .result-title {
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #0d6efd;
-        }
-        .timeline {
-            margin-top: 15px;
-            border-left: 2px solid #0d6efd;
-            padding-left: 15px;
-        }
-        .timeline-item {
-            margin-bottom: 15px;
-            position: relative;
-        }
-        .timeline-item::before {
-            content: '';
-            width: 10px;
-            height: 10px;
-            background: #0d6efd;
-            border-radius: 50%;
-            position: absolute;
-            left: -21px;
-            top: 5px;
-        }
-        .timeline-time {
-            font-size: 12px;
-            color: #6c757d;
-        }
-        .timeline-desc {
-            font-size: 14px;
-            color: #212529;
-            margin-top: 2px;
-        }
-        .loading {
-            text-align: center;
-            color: #6c757d;
-            display: none;
-            margin-bottom: 15px;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="title">ຕິດຕາມພັດສະດຸ ຈີນ - ລາວ</div>
-    <div class="subtitle">ກວດກາສະຖານະເຄື່ອງຂອງທ່ານໄດ້ງ່າຍໆ ຢູ່ທີ່ນີ້</div>
-
-    <div class="search-box">
-        <input type="text" id="trackNo" class="search-input" placeholder="ກະລຸນາປ້ອນເລກພັດສະດຸ..." value="79120409198046">
-        <button onclick="trackPackage()" class="search-btn">ຄົ້ນຫາ</button>
-    </div>
-
-    <div id="loading" class="loading">ກຳລັງໂຫລດຂໍ້ມູນ...</div>
-
-    <div id="resultBox" class="result-box">
-        <div class="result-title" id="statusHeader">ສະຖານະພັດສະດຸ:</div>
-        <div id="statusContent"></div>
-    </div>
-</div>
-
 <script>
     async function trackPackage() {
         const trackNo = document.getElementById('trackNo').value.trim();
@@ -162,32 +21,41 @@
             resultBox.style.display = 'block';
 
             if (result.success && result.data) {
-                const apiData = result.data;
+                const rawData = result.data;
                 let logs = [];
 
-                if (apiData.data && Array.isArray(apiData.data.log_list)) {
-                    logs = apiData.data.log_list;
-                } else if (Array.isArray(apiData.data)) {
-                    logs = apiData.data;
+                // ดึงข้อมูล timeline จากโครงสร้าง JSON ของ 0x26.cn
+                if (rawData.data && rawData.data.log_list) {
+                    logs = rawData.data.log_list;
+                } else if (rawData.data && Array.isArray(rawData.data)) {
+                    logs = rawData.data;
+                } else if (Array.isArray(rawData)) {
+                    logs = rawData;
                 }
 
                 if (logs.length > 0) {
                     let html = '<div class="timeline">';
                     logs.forEach(item => {
+                        // รองรับ field time และ context หลายรูปแบบ
+                        const time = item.create_time || item.time || item.date || item.created_at || '';
+                        const desc = item.context || item.desc || item.status || item.content || item.log_type_name || JSON.stringify(item);
+                        
                         html += `
                             <div class="timeline-item">
-                                <div class="timeline-time">${item.create_time || item.time || ''}</div>
-                                <div class="timeline-desc">${item.context || item.desc || item.status || ''}</div>
+                                <div class="timeline-time">${time}</div>
+                                <div class="timeline-desc">${desc}</div>
                             </div>
                         `;
                     });
                     html += '</div>';
                     statusContent.innerHTML = html;
                 } else {
-                    statusContent.innerHTML = 'พบข้อมูลพัสดุ แต่ไม่มีประวัติการขนส่งเพิ่มเติม';
+                    // กรณีไม่มี log แสดงสถานะปัจจุบัน (ถ้ามี)
+                    const currentStatus = rawData.data?.status_name || rawData.data?.order_status || 'ບໍ່ພົບປະຫວັດການຂົນສົ່ງ';
+                    statusContent.innerHTML = `<p style="padding: 10px; color: #555;">${currentStatus}</p>`;
                 }
             } else {
-                statusContent.innerHTML = 'ไม่พบข้อมูลพัสดุหมายเลขนี้';
+                statusContent.innerHTML = 'ບໍ່ພົບຂໍ້ມູນພັດສະດຸหมายเลขนี้';
             }
         } catch (error) {
             loading.style.display = 'none';
@@ -197,6 +65,3 @@
         }
     }
 </script>
-
-</body>
-</html>
