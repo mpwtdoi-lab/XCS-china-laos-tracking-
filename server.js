@@ -4,25 +4,34 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+// ใช้ process.env.PORT หรือ fallback ไปที่ 8080 เพื่อหลีกเลี่ยงปัญหา Network Block
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ให้บริการไฟล์ Static
 app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
 
+// API Endpoint สำหรับค้นหาพัสดุ
 app.get('/api/track/:waybillNo', async (req, res) => {
     const { waybillNo } = req.params;
 
     if (!waybillNo) {
-        return res.status(400).json({ success: false, message: 'กรุณาระบุหมายเลขพัสดุ' });
+        return res.status(400).json({ 
+            success: false, 
+            message: 'กรุณาระบุหมายเลขพัสดุ' 
+        });
     }
+
+    console.log(`[${new Date().toISOString()}] Querying Waybill: ${waybillNo}`);
 
     try {
         const targetUrl = 'https://0x26.cn/index.php/OpenApi/Order/getOrderStatus';
         
-        // ใช้ URLSearchParams แทน qs เพื่อป้องกัน Module Not Found
+        // ใช้ URLSearchParams ในตัวของ Node.js (ไม่ต้องลง package เสริม)
         const formData = new URLSearchParams();
         formData.append('v', '3.1');
         formData.append('auth', 'b39aba698b7d588f8237fec222d959fb');
@@ -39,23 +48,38 @@ app.get('/api/track/:waybillNo', async (req, res) => {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Referer': 'https://0x26.cn/static/h5/index.html'
+                'Accept': 'application/json, text/plain, */*',
+                'Referer': 'https://0x26.cn/static/h5/index.html',
+                'Origin': 'https://0x26.cn'
             }
         });
 
-        return res.json({ success: true, waybillNo, data: response.data });
+        return res.json({
+            success: true,
+            waybillNo: waybillNo,
+            data: response.data
+        });
 
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error(`[API Error]:`, error.message);
+        return res.status(500).json({
+            success: false,
+            message: 'เกิดข้อผิดพลาดในการดึงข้อมูลพัสดุ',
+            error: error.message
+        });
     }
 });
 
+// Health check endpoint สำหรับ Render
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
+// หน้าเว็บหลัก
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'test.html'), (err) => {
-        if (err) res.status(200).send('XCS Tracking Server Active');
+        if (err) res.status(200).send('<h1>XCS Tracking API Online</h1>');
     });
 });
 
-app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Server is running on port: ${PORT}`);
+});
