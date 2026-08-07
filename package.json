@@ -1,5 +1,5 @@
 {
-  "name": "xcs-express-app",
+  "name": "xcs-china-laos-tracking",
   "version": "1.0.0",
   "description": "China-Laos Tracking API Service",
   "main": "server.js",
