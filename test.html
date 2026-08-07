@@ -118,14 +118,6 @@
             display: none;
             margin-bottom: 15px;
         }
-        pre {
-            white-space: pre-wrap;
-            word-break: break-all;
-            background: #e9ecef;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 12px;
-        }
     </style>
 </head>
 <body>
@@ -169,34 +161,19 @@
             loading.style.display = 'none';
             resultBox.style.display = 'block';
 
-            if (result.success && result.data) {
-                const apiRes = result.data;
-                let logs = [];
+            if (result.success && result.data && result.data.res) {
+                const resData = result.data.res;
+                const logs = resData.status_list || [];
 
-                // 1. ค้นหา Array จากโครงสร้างข้อมูลต่างๆ
-                if (Array.isArray(apiRes)) {
-                    logs = apiRes;
-                } else if (apiRes.data) {
-                    if (Array.isArray(apiRes.data)) logs = apiRes.data;
-                    else if (Array.isArray(apiRes.data.log_list)) logs = apiRes.data.log_list;
-                    else if (Array.isArray(apiRes.data.logs)) logs = apiRes.data.logs;
-                    else if (Array.isArray(apiRes.data.list)) logs = apiRes.data.list;
-                    else if (typeof apiRes.data === 'object') {
-                        for (let key in apiRes.data) {
-                            if (Array.isArray(apiRes.data[key])) {
-                                logs = apiRes.data[key];
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // 2. ถ้าเจอรายการประวัติ ให้แสดงผลเป็น Timeline
                 if (logs.length > 0) {
-                    let html = '<div class="timeline">';
+                    let html = `<div style="margin-bottom: 12px; font-weight: bold; color: #333;">
+                                  ເລກໃບສັ່ງ: ${resData.od_num || trackNo}
+                                </div>`;
+                    
+                    html += '<div class="timeline">';
                     logs.forEach(item => {
-                        const time = item.create_time || item.time || item.date || item.created_at || item.scan_time || '';
-                        const desc = item.context || item.desc || item.status || item.content || item.log_type_name || item.remark || (typeof item === 'string' ? item : JSON.stringify(item));
+                        const time = item.time || '';
+                        const desc = item.desc || item.type_show || '';
                         
                         html += `
                             <div class="timeline-item">
@@ -208,8 +185,7 @@
                     html += '</div>';
                     statusContent.innerHTML = html;
                 } else {
-                    // 3. ถ้าดึง Array ไม่เจอ ให้แสดงโครงสร้าง JSON ทั้งหมดออกหน้าจอ
-                    statusContent.innerHTML = `<pre>${JSON.stringify(apiRes, null, 2)}</pre>`;
+                    statusContent.innerHTML = 'ບໍ່ພົບປະຫວັດການຂົນສົ່ງ';
                 }
             } else {
                 statusContent.innerHTML = 'ບໍ່ພົບຂໍ້ມູນພັດສະດຸ';
