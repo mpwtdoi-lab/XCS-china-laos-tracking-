@@ -4,60 +4,28 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
-// ป้องกัน Process ดับเมื่อเจอ Uncaught Exception
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-// ตั้งค่า CORS ให้รองรับทุกเบราว์เซอร์
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-}));
-
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
-});
-
+// เปิดใช้งาน CORS ให้ทุกเบราว์เซอร์เข้าถึงได้
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
+// เสิร์ฟไฟล์Static หน้าเว็บ
 app.use(express.static(__dirname));
-app.use(express.static(path.join(__dirname, 'public')));
 
-// หน้าแรก ส่งไฟล์ test.html
+// หน้าแรก ให้แสดงไฟล์ test.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'test.html'), (err) => {
-        if (err) res.status(200).send('<h1>XCS Tracking API Online</h1>');
-    });
+    res.sendFile(path.join(__dirname, 'test.html'));
 });
 
-// API Endpoint สำหรับดึงข้อมูลพัสดุ
+// API สำหรับดึงสถานะพัสดุ
 app.get('/api/track/:waybillNo', async (req, res) => {
     const { waybillNo } = req.params;
 
     if (!waybillNo) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'กรุณาระบุหมายเลขพัสดุ' 
-        });
+        return res.status(400).json({ success: false, message: 'กรุณาระบุหมายเลขพัสดุ' });
     }
-
-    console.log(`[${new Date().toISOString()}] Querying Waybill: ${waybillNo}`);
 
     try {
         const targetUrl = 'https://0x26.cn/index.php/OpenApi/Order/getOrderStatus';
@@ -74,35 +42,24 @@ app.get('/api/track/:waybillNo', async (req, res) => {
                 logid: '001786100803036',
                 app_info: JSON.stringify({ from: 'h5', os_type: 'other' })
             },
-            timeout: 15000,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'application/json, text/plain, */*',
-                'Referer': 'https://0x26.cn/static/h5/index.html',
-                'Origin': 'https://0x26.cn'
+                'Referer': 'https://0x26.cn/static/h5/index.html'
             }
         });
 
-        return res.json({
-            success: true,
-            waybillNo: waybillNo,
-            data: response.data
-        });
+        return res.json({ success: true, waybillNo, data: response.data });
 
     } catch (error) {
-        console.error(`[API Error]:`, error.message);
-        return res.status(500).json({
-            success: false,
-            message: 'เกิดข้อผิดพลาดในการดึงข้อมูลพัสดุ',
-            error: error.message
-        });
+        console.error("API Error:", error.message);
+        return res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Health check
+// Health check endpoint
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
