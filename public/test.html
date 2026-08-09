@@ -306,6 +306,169 @@
     line-height: 1.5;
   }
 
+  /* ---------- Shipping cost calculator ---------- */
+  .calc-card {
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(33, 24, 21, 0.12);
+    padding: 20px;
+    margin-top: 20px;
+  }
+
+  .calc-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Kanit', 'Noto Sans Lao', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--xcs-red-dark);
+    margin-bottom: 4px;
+  }
+
+  .calc-sub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .calc-field label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+
+  .calc-field input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    font-family: 'Kanit', sans-serif;
+    font-size: 15px;
+    outline: none;
+    color: var(--ink);
+  }
+
+  .calc-field input:focus {
+    border-color: var(--xcs-red);
+  }
+
+  .calc-rate-row {
+    margin-bottom: 16px;
+  }
+
+  .dim-section {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+  }
+
+  .dim-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .dim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .dim-grid .calc-field label {
+    font-size: 11px;
+  }
+
+  .dim-grid .calc-field input {
+    padding: 9px 8px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .dim-result {
+    margin-top: 8px;
+    font-size: 12.5px;
+    color: var(--xcs-red-dark);
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .calc-rate-row label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+
+  .calc-btn {
+    width: 100%;
+    background: var(--xcs-red);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'Kanit', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .calc-btn:hover { background: var(--xcs-red-dark); }
+
+  .calc-result {
+    margin-top: 16px;
+    display: none;
+  }
+
+  .calc-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 13.5px;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .calc-line.chosen {
+    color: var(--xcs-red-dark);
+    font-weight: 700;
+  }
+
+  .calc-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: #FFF4E0;
+    border: 1px solid #FFE1A8;
+    border-radius: 12px;
+  }
+
+  .calc-total .calc-total-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .calc-total .calc-total-value {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--xcs-red-dark);
+  }
+
   /* ---------- Route timeline (signature element) ---------- */
   .route {
     position: relative;
@@ -410,6 +573,48 @@
   </div>
 
   <div class="result" id="resultBox"></div>
+
+  <div class="calc-card">
+    <div class="calc-title">🧮 ຄິດໄລ່ຄ່າຂົນສົ່ງ</div>
+    <div class="calc-sub">ຄິດຈາກນ້ຳໜັກ ຫຼື ນ້ຳໜັກປະລິມາດ ແລ້ວເລືອກອັນທີ່ລາຄາສູງກວ່າ</div>
+
+    <div class="calc-grid">
+      <div class="calc-field">
+        <label>ນ້ຳໜັກ (ກິໂລ)</label>
+        <input type="number" id="calcWeight" placeholder="0" min="0" step="0.1">
+      </div>
+      <div class="calc-field">
+        <label>ນ້ຳໜັກປະລິມາດ (ກກ.)</label>
+        <input type="number" id="calcVolWeight" placeholder="0" min="0" step="0.01">
+      </div>
+    </div>
+
+    <div class="dim-section">
+      <div class="dim-label">
+        <span>ຫຼື ຄິດຈາກຂະໜາດ (ຍາວ x ກວ້າງ x ສູງ ÷ 6000)</span>
+        <span>ຈະຄິດໄລ່ໃສ່ຊ່ອງດ້ານເທິງໃຫ້ອັດຕະໂນມັດ</span>
+      </div>
+      <div class="dim-grid">
+        <div class="calc-field">
+          <label>ຍາວ (cm)</label>
+          <input type="number" id="dimLength" placeholder="0" min="0" step="0.1" oninput="calcVolumeFromDims()">
+        </div>
+        <div class="calc-field">
+          <label>ກວ້າງ(cm)</label>
+          <input type="number" id="dimWidth" placeholder="0" min="0" step="0.1" oninput="calcVolumeFromDims()">
+        </div>
+        <div class="calc-field">
+          <label>ສູງ(cm)</label>
+          <input type="number" id="dimHeight" placeholder="0" min="0" step="0.1" oninput="calcVolumeFromDims()">
+        </div>
+      </div>
+      <div class="dim-result" id="dimResult"></div>
+    </div>
+
+    <button class="calc-btn lat" onclick="calcShipping()">ຄິດໄລ່</button>
+
+    <div class="calc-result" id="calcResult"></div>
+  </div>
 </div>
 
 <footer>© XCS Logistics · ໂຊກຈະເລີນຊັບ ໂລຈິສຕິກ</footer>
@@ -580,6 +785,64 @@ async function trackPackage() {
 document.getElementById('trackNo').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') trackPackage();
 });
+
+// ---------- ຄິດໄລ່ຄ່າຂົນສົ່ງ ----------
+// ຄ່າຂົນສົ່ງ = ນ້ຳໜັກ x 25,000 ກີບ/ກກ ຫຼື ນ້ຳໜັກປະລິມາດ (ຍາວ×ກວ້າງ×ສູງ÷6000) x 25,000 ກີບ/ກກ - ເລືອກອັນສູງກວ່າ
+const RATE_PER_KG_KIP = 25000;
+const VOLUMETRIC_DIVISOR = 6000;
+
+function formatKip(n) {
+  return Math.round(n).toLocaleString('en-US');
+}
+
+// ຄິດນ້ຳໜັກປະລິມາດ (ກກ.) ຈາກ ຍາວ x ກວ້າງ x ສູງ (ຫົວໜ່ວຍ ຊມ.) ÷ 6000 ແລ້ວໃສ່ຊ່ອງອັດຕະໂນມັດ
+function calcVolumeFromDims() {
+  const l = parseFloat(document.getElementById('dimLength').value) || 0;
+  const w = parseFloat(document.getElementById('dimWidth').value) || 0;
+  const h = parseFloat(document.getElementById('dimHeight').value) || 0;
+  const dimResult = document.getElementById('dimResult');
+
+  if (l > 0 && w > 0 && h > 0) {
+    const volWeight = (l * w * h) / VOLUMETRIC_DIVISOR; // ຊມ.³ ÷ 6000 -> ກກ. (ນ້ຳໜັກປະລິມາດ)
+    document.getElementById('calcVolWeight').value = volWeight.toFixed(2);
+    dimResult.textContent = `= ${volWeight.toFixed(2)} ກກ. (${l} × ${w} × ${h} ÷ 6000)`;
+  } else {
+    dimResult.textContent = '';
+  }
+}
+
+function calcShipping() {
+  const weight = parseFloat(document.getElementById('calcWeight').value) || 0;
+  const volWeight = parseFloat(document.getElementById('calcVolWeight').value) || 0;
+  const resultEl = document.getElementById('calcResult');
+
+  if (weight <= 0 && volWeight <= 0) {
+    alert('ກະລຸນາປ້ອນນ້ຳໜັກ ຫຼື ນ້ຳໜັກປະລິມາດຢ່າງໜ້ອຍໜຶ່ງຢ່າງ');
+    return;
+  }
+
+  const costByWeight = weight * RATE_PER_KG_KIP;
+  const costByVolWeight = volWeight * RATE_PER_KG_KIP;
+  const useWeight = costByWeight >= costByVolWeight;
+  const chargeableWeight = Math.max(weight, volWeight);
+  const total = chargeableWeight * RATE_PER_KG_KIP;
+
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = `
+    <div class="calc-line ${useWeight ? 'chosen' : ''}">
+      <span>ນ້ຳໜັກຈິງ (${weight} ກກ. × ${formatKip(RATE_PER_KG_KIP)} ກີບ)</span>
+      <span>${formatKip(costByWeight)} ກີບ</span>
+    </div>
+    <div class="calc-line ${!useWeight ? 'chosen' : ''}">
+      <span>ນ້ຳໜັກປະລິມາດ (${volWeight} ກກ. × ${formatKip(RATE_PER_KG_KIP)} ກີບ)</span>
+      <span>${formatKip(costByVolWeight)} ກີບ</span>
+    </div>
+    <div class="calc-total">
+      <span class="calc-total-label">ຄ່າຂົນສົ່ງທັງໝົດ (${useWeight ? 'ຄິດຕາມນ້ຳໜັກຈິງ' : 'ຄິດຕາມນ້ຳໜັກປະລິມາດ'})</span>
+      <span class="calc-total-value">${formatKip(total)} ກີບ</span>
+    </div>
+  `;
+}
 </script>
 </body>
 </html>
