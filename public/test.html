@@ -212,6 +212,93 @@
     line-height: 1.6;
   }
 
+  /* ---------- Info cards: shipment / carrier ---------- */
+  .info-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+
+  .info-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Kanit', 'Noto Sans Lao', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--xcs-red-dark);
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .info-card-title .icon-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--xcs-yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .info-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .info-row .info-label {
+    color: var(--ink-soft);
+    min-width: 76px;
+    flex-shrink: 0;
+  }
+
+  .info-row .info-value {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .carrier-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .carrier-pin {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--success);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .carrier-name {
+    font-family: 'Kanit', 'Noto Sans Lao', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .carrier-addr {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
   /* ---------- Route timeline (signature element) ---------- */
   .route {
     position: relative;
@@ -343,7 +430,15 @@ const STATUS_DICT = [
   [/磨憨/g, 'Mohan'],
   [/磨丁/g, 'Boten'],
   [/昆明/g, 'Kunming'],
-  [/海林/g, 'XCS'] // ແທນທີ່ຊື່ບໍລິສັດເດີມດ້ວຍ XCS
+  [/海林国际物流有限公司/g, 'ບໍລິສັດ ຂົນສົ່ງສາກົນ XCS ຈຳກັດ'], // ชื่อเต็มบริษัท ต้องแปลก่อน general replace ด้านล่าง
+  [/佛山仓库/g, 'ຄັງສິນຄ້າ Foshan'],
+  [/广东省佛山市/g, 'Guangdong · Foshan'],
+  [/佛山市/g, 'Foshan'],
+  [/广东省/g, 'Guangdong'],
+  [/快递/g, 'ພັດສະດຸດ່ວນ'],
+  [/(\d+)件/g, '$1 ອັນ'],
+  [/短驳中/g, 'ກຳລັງຂົນສົ່ງໄລຍະສັ້ນ'],
+  [/海林/g, 'XCS'] // ແທນທີ່ຊື່ບໍລິສັດເດີມດ້ວຍ XCS (ຕ້ອງໄວ້ລຳດັບສຸດທ້າຍ)
 ];
 
 function translateStatus(text) {
@@ -397,6 +492,50 @@ async function trackPackage() {
           <span class="value">${escapeHtml(resData.od_num || trackNo)}</span>
         </div>
       `;
+
+      // ---------- ຂໍ້ມູນໃບສັ່ງ (Shipment info) ----------
+      const startText = translateStatus(resData.startCity || (resData.start_info && resData.start_info.poi) || '');
+      const endText = translateStatus(resData.toCity || (resData.arr_info && resData.arr_info.poi) || '');
+      const goodsList = Array.isArray(resData.goods) ? resData.goods : [];
+      const goodsText = goodsList.length
+        ? goodsList.map(g => {
+            const name = translateStatus(g.name || '');
+            const num = g.num ? `${g.num} ອັນ` : '';
+            return [name, num].filter(Boolean).join(' / ');
+          }).join(', ')
+        : '';
+
+      if (startText || endText || goodsText) {
+        html += `
+          <div class="info-card">
+            <div class="info-card-title"><span class="icon-badge">📋</span>ຂໍ້ມູນໃບສັ່ງ</div>
+            ${startText ? `<div class="info-row"><span class="info-label">ຕົ້ນທາງ</span><span class="info-value">${startText}</span></div>` : ''}
+            ${endText ? `<div class="info-row"><span class="info-label">ປາຍທາງ</span><span class="info-value">${endText}</span></div>` : ''}
+            ${goodsText ? `<div class="info-row"><span class="info-label">ສິນຄ້າ</span><span class="info-value">${goodsText}</span></div>` : ''}
+          </div>
+        `;
+      }
+
+      // ---------- ຂໍ້ມູນຜູ້ຂົນສົ່ງ (Carrier info) ----------
+      const carrierCompany = translateStatus(resData.group_name || '');
+      const carrierPointName = translateStatus(resData.co_point_name || '');
+      const carrierAddr = translateStatus((resData.co_point && resData.co_point.show_val) || '');
+
+      if (carrierCompany || carrierPointName || carrierAddr) {
+        html += `
+          <div class="info-card">
+            <div class="info-card-title"><span class="icon-badge">🚚</span>ຂໍ້ມູນຜູ້ຂົນສົ່ງ</div>
+            ${carrierCompany ? `<div class="info-row"><span class="info-label">ບໍລິສັດ</span><span class="info-value">${carrierCompany}</span></div>` : ''}
+            <div class="carrier-block" style="margin-top:${carrierCompany ? '10px' : '0'};">
+              <div class="carrier-pin">📍</div>
+              <div>
+                ${carrierPointName ? `<div class="carrier-name">${carrierPointName}</div>` : ''}
+                ${carrierAddr ? `<div class="carrier-addr">${carrierAddr}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }
 
       if (logs.length > 0) {
         html += '<div class="route">';
