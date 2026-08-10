@@ -548,6 +548,69 @@
     font-size: 12.5px;
     padding: 0 20px;
   }
+
+  /* ---------- Contact card ---------- */
+  .contact-card {
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(33, 24, 21, 0.12);
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .contact-title {
+    font-family: 'Kanit', 'Noto Sans Lao', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--xcs-red-dark);
+    margin-bottom: 4px;
+  }
+
+  .contact-sub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+
+  .contact-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .contact-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-family: 'Kanit', 'Noto Sans Lao', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+    transition: opacity 0.15s;
+  }
+
+  .contact-btn:hover {
+    opacity: 0.9;
+  }
+
+  .contact-btn.messenger {
+    background: linear-gradient(135deg, #00B2FF, #006AFF);
+  }
+
+  .contact-btn.whatsapp {
+    background: #25D366;
+  }
+
+  .contact-btn svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -575,24 +638,18 @@
   <div class="result" id="resultBox"></div>
 
   <div class="calc-card">
-    <div class="calc-title">🧮 ຄິດໄລ່ຄ່າຂົນສົ່ງ</div>
-    <div class="calc-sub">ຄິດຈາກນ້ຳໜັກ ຫຼື ນ້ຳໜັກປະລິມາດ ແລ້ວເລືອກອັນທີ່ລາຄາສູງກວ່າ</div>
+    <div class="calc-title">🧮 ຄຳນວນຄ່າຂົນສົ່ງ</div>
+    <div class="calc-sub">ຄິດຈາກນ້ຳໜັກ ຫຼື ນ້ຳໜັກບໍລິມາດ</div>
 
-    <div class="calc-grid">
-      <div class="calc-field">
-        <label>ນ້ຳໜັກ (ກິໂລ)</label>
-        <input type="number" id="calcWeight" placeholder="0" min="0" step="0.1">
-      </div>
-      <div class="calc-field">
-        <label>ນ້ຳໜັກປະລິມາດ (ກກ.)</label>
-        <input type="number" id="calcVolWeight" placeholder="0" min="0" step="0.01">
-      </div>
+    <div class="calc-field" style="margin-bottom:12px;">
+      <label>ນ້ຳໜັກ (ກິໂລ)</label>
+      <input type="number" id="calcWeight" placeholder="0" min="0" step="0.1">
     </div>
+    <input type="hidden" id="calcVolWeight" value="0">
 
     <div class="dim-section">
       <div class="dim-label">
         <span>ຫຼື ຄິດຈາກຂະໜາດ (ຍາວ x ກວ້າງ x ສູງ ÷ 6000)</span>
-        <span>ຈະຄິດໄລ່ໃສ່ຊ່ອງດ້ານເທິງໃຫ້ອັດຕະໂນມັດ</span>
       </div>
       <div class="dim-grid">
         <div class="calc-field">
@@ -614,6 +671,20 @@
     <button class="calc-btn lat" onclick="calcShipping()">ຄິດໄລ່</button>
 
     <div class="calc-result" id="calcResult"></div>
+  </div>
+  <div class="contact-card">
+    <div class="contact-title">📞 ຕິດຕໍ່ພວກເຮົາ</div>
+    <div class="contact-sub">ມີຄຳຖາມ ຫຼື ຕ້ອງການຄວາມຊ່ວຍເຫຼືອ ທັກຫາເຮົາໄດ້ເລີຍ</div>
+    <div class="contact-buttons">
+      <a href="https://www.facebook.com/share/1ByaJht9B6/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="contact-btn messenger">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.5 5.5 3.8 7.2V22l3.5-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2zm1 12.4l-2.6-2.7-5 2.7 5.5-5.8 2.6 2.7 5-2.7-5.5 5.8z"/></svg>
+        Messenger
+      </a>
+      <a href="https://wa.me/8562097115595?text=%E0%BA%AA%E0%BA%B0%E0%BA%9A%E0%BA%B2%E0%BA%8D%E0%BA%94%E0%BA%B5%20%E0%BA%AA%E0%BA%AD%E0%BA%9A%E0%BA%96%E0%BA%B2%E0%BA%A1%E0%BA%81%E0%BB%88%E0%BA%BD%E0%BA%A7%E0%BA%81%E0%BA%B1%E0%BA%9A%E0%BA%81%E0%BA%B2%E0%BA%99%E0%BA%82%E0%BA%BB%E0%BA%99%E0%BA%AA%E0%BA%BB%E0%BB%88%E0%BA%87%E0%BA%88%E0%BA%B5%E0%BA%99-%E0%BA%A5%E0%BA%B2%E0%BA%A7" target="_blank" rel="noopener noreferrer" class="contact-btn whatsapp">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15c-1.49 0-2.94-.4-4.21-1.16l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 01-1.26-4.37c0-4.54 3.7-8.24 8.26-8.24 4.55 0 8.25 3.7 8.25 8.24 0 4.55-3.7 8.24-8.25 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.4-.12-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.17 1.73 2.64 4.19 3.7.59.25 1.04.4 1.4.52.59.19 1.12.16 1.54.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z"/></svg>
+        WhatsApp
+      </a>
+    </div>
   </div>
 </div>
 
@@ -817,7 +888,7 @@ function calcShipping() {
   const resultEl = document.getElementById('calcResult');
 
   if (weight <= 0 && volWeight <= 0) {
-    alert('ກະລຸນາປ້ອນນ້ຳໜັກ ຫຼື ນ້ຳໜັກປະລິມາດຢ່າງໜ້ອຍໜຶ່ງຢ່າງ');
+    alert('ກະລຸນາປ້ອນນ້ຳໜັກ ຫຼື ນ້ຳໜັກບໍລິມາດຢ່າງໜ້ອຍໜຶ່ງຢ່າງ');
     return;
   }
 
@@ -829,16 +900,8 @@ function calcShipping() {
 
   resultEl.style.display = 'block';
   resultEl.innerHTML = `
-    <div class="calc-line ${useWeight ? 'chosen' : ''}">
-      <span>ນ້ຳໜັກຈິງ (${weight} ກກ. × ${formatKip(RATE_PER_KG_KIP)} ກີບ)</span>
-      <span>${formatKip(costByWeight)} ກີບ</span>
-    </div>
-    <div class="calc-line ${!useWeight ? 'chosen' : ''}">
-      <span>ນ້ຳໜັກປະລິມາດ (${volWeight} ກກ. × ${formatKip(RATE_PER_KG_KIP)} ກີບ)</span>
-      <span>${formatKip(costByVolWeight)} ກີບ</span>
-    </div>
     <div class="calc-total">
-      <span class="calc-total-label">ຄ່າຂົນສົ່ງທັງໝົດ (${useWeight ? 'ຄິດຕາມນ້ຳໜັກຈິງ' : 'ຄິດຕາມນ້ຳໜັກປະລິມາດ'})</span>
+      <span class="calc-total-label">ຄ່າຂົນສົ່ງທັງໝົດ (${useWeight ? 'ຄິດຕາມນ້ຳໜັກຈິງ' : 'ຄິດຕາມນ້ຳໜັກບໍລິມາດ'})</span>
       <span class="calc-total-value">${formatKip(total)} ກີບ</span>
     </div>
   `;
